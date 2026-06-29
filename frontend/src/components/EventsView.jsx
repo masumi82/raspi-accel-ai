@@ -13,6 +13,7 @@ export default function EventsView({ token }) {
   useEffect(() => {
     let active = true;
     setLoading(true);
+    setError(null);
     fetchEvents(config.apiUrl, token, config.deviceId, 100)
       .then((d) => active && setEvents(d.events || []))
       .catch((e) => active && setError(e.message))

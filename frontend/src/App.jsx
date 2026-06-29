@@ -22,7 +22,7 @@ export default function App() {
     <main style={{ padding: 24, fontFamily: "system-ui, sans-serif" }}>
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h1>raspi-accel-ai dashboard</h1>
-        <button onClick={() => { window.location.href = cognitoLogoutUrl(config); }}>
+        <button onClick={() => { auth.removeUser(); window.location.href = cognitoLogoutUrl(config); }}>
           ログアウト
         </button>
       </header>

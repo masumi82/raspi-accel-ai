@@ -7,7 +7,10 @@ import App from "./App";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <AuthProvider {...buildOidcConfig(config)}>
+    <AuthProvider
+      {...buildOidcConfig(config)}
+      onSigninCallback={() => window.history.replaceState({}, document.title, window.location.pathname)}
+    >
       <App />
     </AuthProvider>
   </React.StrictMode>

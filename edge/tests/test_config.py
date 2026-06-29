@@ -8,6 +8,7 @@ def test_from_env_defaults():
     assert cfg.window_ms == 1000
     assert cfg.sensor_mode == "rest"
     assert cfg.buffer_path == "buffer.jsonl"
+    assert cfg.buffer_max_entries == 5000
 
 
 def test_from_env_overrides_and_int_parsing():

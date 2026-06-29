@@ -25,6 +25,9 @@ curl -s https://www.amazontrust.com/repository/AmazonRootCA1.pem -o certs/Amazon
 ```
 
 ## Raspberry Pi での実行
+
+> 重要: DEVICE_ID は provision で作成した --thing-name と必ず一致させること。IoTポリシーは ${iot:Connection.Thing.ThingName} でスコープされ、不一致だと接続/発行が拒否される。
+
 ```bash
 pip install -r edge/requirements.txt   # adafruit-circuitpython-adxl34x, awsiotsdk
 export IOT_ENDPOINT="$(aws iot describe-endpoint --endpoint-type iot:Data-ATS --query endpointAddress --output text)"

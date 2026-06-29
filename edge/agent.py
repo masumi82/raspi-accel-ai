@@ -60,5 +60,5 @@ def build_agent(config):
         ca_path=config.ca_path,
         client_id=config.device_id,
     )
-    buffer = OfflineBuffer(config.buffer_path)
+    buffer = OfflineBuffer(config.buffer_path, max_entries=config.buffer_max_entries)
     return Agent(sensor, detector, publisher, buffer, config, connected=False)

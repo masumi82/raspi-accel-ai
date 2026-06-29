@@ -66,3 +66,4 @@ if __name__ == "__main__":  # pragma: no cover
     print(f"certificateArn: {out['certificateArn']}")
     print(f"cert: {out['cert_path']}  key: {out['key_path']}")
     print("Download the Amazon Root CA1 to certs/AmazonRootCA1.pem before connecting.")
+    print(f"export DEVICE_ID={args.thing_name}")

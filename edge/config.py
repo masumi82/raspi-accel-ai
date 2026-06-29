@@ -13,6 +13,7 @@ class AgentConfig:
     window_ms: int
     sensor_mode: str
     buffer_path: str
+    buffer_max_entries: int
 
     @classmethod
     def from_env(cls, env=None):
@@ -27,4 +28,5 @@ class AgentConfig:
             window_ms=int(env.get("WINDOW_MS", "1000")),
             sensor_mode=env.get("SENSOR_MODE", "rest"),
             buffer_path=env.get("BUFFER_PATH", "buffer.jsonl"),
+            buffer_max_entries=int(env.get("BUFFER_MAX_ENTRIES", "5000")),
         )

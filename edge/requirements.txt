@@ -1,0 +1,3 @@
+adafruit-circuitpython-adxl34x>=1.0
+awsiotsdk>=1.0
+boto3>=1.34

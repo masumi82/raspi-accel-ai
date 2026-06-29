@@ -45,9 +45,9 @@ def provision_device(iot_client, thing_name, policy_name, cert_dir):
     key_path = os.path.join(cert_dir, "device.private.key")
     with open(cert_path, "w") as f:
         f.write(keys["certificatePem"])
-    with open(key_path, "w") as f:
+    fd = os.open(key_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
         f.write(keys["keyPair"]["PrivateKey"])
-    os.chmod(key_path, 0o600)
     return {"certificateArn": cert_arn, "cert_path": cert_path, "key_path": key_path}
 
 

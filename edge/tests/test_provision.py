@@ -1,5 +1,5 @@
-import json
 import os
+import stat
 
 import boto3
 from moto import mock_aws
@@ -35,3 +35,5 @@ def test_provision_device_creates_thing_cert_and_files(tmp_path):
     # principal attached to thing
     principals = client.list_thing_principals(thingName="raspi-01")["principals"]
     assert len(principals) == 1
+    # private key must be created owner-read/write only (0o600)
+    assert stat.S_IMODE(os.stat(result["key_path"]).st_mode) == 0o600

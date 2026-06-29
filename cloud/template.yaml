@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: raspi-accel-ai cloud backend (IoT -> Bedrock -> DynamoDB)
+
+Parameters:
+  BedrockModelId:
+    Type: String
+    Default: apac.anthropic.claude-sonnet-4-20250514-v1:0
+    Description: Bedrock Geo inference-profile id for Claude Sonnet (APAC/Tokyo default; must be enabled in the deploy region)
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 30
+    MemorySize: 256
+
+Resources:
+  EventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: deviceId
+          AttributeType: S
+        - AttributeName: ts
+          AttributeType: S
+      KeySchema:
+        - AttributeName: deviceId
+          KeyType: HASH
+        - AttributeName: ts
+          KeyType: RANGE
+
+  AnalyzerDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600
+
+  AnalyzerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: analyzer.handler.handler
+      Environment:
+        Variables:
+          EVENTS_TABLE: !Ref EventsTable
+          BEDROCK_MODEL_ID: !Ref BedrockModelId
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt AnalyzerDLQ.Arn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventsTable
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt AnalyzerDLQ.QueueName
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: "*"
+      Events:
+        AccelEvent:
+          Type: IoTRule
+          Properties:
+            Sql: "SELECT * FROM 'devices/+/events'"
+
+Outputs:
+  EventsTableName:
+    Value: !Ref EventsTable
+  AnalyzerFunctionName:
+    Value: !Ref AnalyzerFunction
+  AnalyzerDLQUrl:
+    Value: !Ref AnalyzerDLQ

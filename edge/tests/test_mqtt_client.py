@@ -30,3 +30,17 @@ def test_connect_without_sdk_raises_import_error():
 
     with pytest.raises(ModuleNotFoundError):
         pub.connect()
+
+
+def test_publish_before_connect_raises():
+    import pytest
+
+    pub = AwsIotPublisher(
+        endpoint="x",
+        cert_path="c",
+        key_path="k",
+        ca_path="ca",
+        client_id="raspi-01",
+    )
+    with pytest.raises(RuntimeError):
+        pub.publish("devices/raspi-01/events", {"a": 1})

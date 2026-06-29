@@ -40,13 +40,16 @@ class AwsIotPublisher(Publisher):
         self._conn.connect().result()
 
     def publish(self, topic, payload):
+        if self._conn is None:
+            raise RuntimeError("connect() must be called before publish()")
         from awscrt import mqtt
 
-        self._conn.publish(
+        future, _ = self._conn.publish(
             topic=topic,
             payload=json.dumps(payload, ensure_ascii=False),
             qos=mqtt.QoS.AT_LEAST_ONCE,
         )
+        future.result()
 
     def disconnect(self):
         if self._conn is not None:

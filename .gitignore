@@ -1,0 +1,26 @@
+# Secrets / credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+certs/
+config/local.*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
+
+# AWS SAM
+.aws-sam/
+
+# OS / editor
+.DS_Store

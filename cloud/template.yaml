@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: raspi-accel-ai cloud backend (IoT -> Bedrock -> DynamoDB)
+
+Parameters:
+  BedrockModelId:
+    Type: String
+    Default: anthropic.claude-sonnet-4-20250514-v1:0
+    Description: Bedrock model id or inference profile id for Claude Sonnet (must be enabled in the region)
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 30
+    MemorySize: 256
+
+Resources:
+  EventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: deviceId
+          AttributeType: S
+        - AttributeName: ts
+          AttributeType: S
+      KeySchema:
+        - AttributeName: deviceId
+          KeyType: HASH
+        - AttributeName: ts
+          KeyType: RANGE
+
+Outputs:
+  EventsTableName:
+    Value: !Ref EventsTable

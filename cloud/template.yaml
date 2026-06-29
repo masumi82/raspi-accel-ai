@@ -30,6 +30,43 @@ Resources:
         - AttributeName: ts
           KeyType: RANGE
 
+  AnalyzerDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600
+
+  AnalyzerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: analyzer.handler.handler
+      Environment:
+        Variables:
+          EVENTS_TABLE: !Ref EventsTable
+          BEDROCK_MODEL_ID: !Ref BedrockModelId
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt AnalyzerDLQ.Arn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EventsTable
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt AnalyzerDLQ.QueueName
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: "*"
+      Events:
+        AccelEvent:
+          Type: IoTRule
+          Properties:
+            Sql: "SELECT * FROM 'devices/+/events'"
+
 Outputs:
   EventsTableName:
     Value: !Ref EventsTable
+  AnalyzerFunctionName:
+    Value: !Ref AnalyzerFunction
+  AnalyzerDLQUrl:
+    Value: !Ref AnalyzerDLQ

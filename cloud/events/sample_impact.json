@@ -1,0 +1,6 @@
+{
+  "device_id": "raspi-01",
+  "ts": "2026-06-29T12:34:56.789Z",
+  "event_hint": "impact",
+  "features": { "mag_peak": 3.21, "mag_rms": 1.05, "tilt_deg": 47.2, "freefall_ms": 0, "window_ms": 1000 }
+}

@@ -10,7 +10,7 @@ def analyze(client, model_id: str, event: ParsedEvent) -> Analysis:
         messages=[
             {"role": "user", "content": [{"text": build_user_message(event)}]}
         ],
-        inferenceConfig={"maxTokens": 300, "temperature": 0.0},
+        inferenceConfig={"maxTokens": 512, "temperature": 0.0},
     )
     text = response["output"]["message"]["content"][0]["text"]
     return parse_analysis(text)

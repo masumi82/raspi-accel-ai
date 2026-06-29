@@ -1,7 +1,6 @@
 from decimal import Decimal
 
 import boto3
-import pytest
 from moto import mock_aws
 
 from analyzer.validate import ParsedEvent

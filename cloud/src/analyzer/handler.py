@@ -2,6 +2,7 @@ import os
 from datetime import datetime, timezone
 
 import boto3
+from botocore.config import Config
 
 from .bedrock_client import analyze
 from .store import build_item, save_item
@@ -14,7 +15,10 @@ _table = None
 def _get_bedrock():
     global _bedrock
     if _bedrock is None:
-        _bedrock = boto3.client("bedrock-runtime")
+        _bedrock = boto3.client(
+            "bedrock-runtime",
+            config=Config(retries={"mode": "adaptive", "max_attempts": 5}),
+        )
     return _bedrock
 
 

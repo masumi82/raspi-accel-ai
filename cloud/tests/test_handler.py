@@ -6,6 +6,7 @@ from moto import mock_aws
 
 import analyzer.handler as handler_mod
 from analyzer.handler import handler
+from analyzer.validate import InvalidEvent
 
 
 class FakeBedrock:
@@ -65,5 +66,5 @@ def test_handler_end_to_end(monkeypatch):
 
 def test_handler_invalid_event_raises(monkeypatch):
     monkeypatch.setenv("BEDROCK_MODEL_ID", "model-x")
-    with pytest.raises(Exception):
+    with pytest.raises(InvalidEvent):
         handler({"features": {}}, None)

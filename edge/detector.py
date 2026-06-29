@@ -33,3 +33,42 @@ def compute_features(samples, sample_period_ms, freefall_threshold_g=0.3):
         "freefall_ms": longest * sample_period_ms,
         "window_ms": n * sample_period_ms,
     }
+
+
+class EventDetector:
+    def __init__(
+        self,
+        *,
+        impact_peak_g=2.5,
+        vibration_rms_g=0.3,
+        tilt_abs_deg=30.0,
+        freefall_ms=80,
+        cooldown_s=30.0,
+    ):
+        self.impact_peak_g = impact_peak_g
+        self.vibration_rms_g = vibration_rms_g
+        self.tilt_abs_deg = tilt_abs_deg
+        self.freefall_ms = freefall_ms
+        self.cooldown_s = cooldown_s
+        self._last_fire = {}
+
+    def _classify(self, features):
+        if features["freefall_ms"] >= self.freefall_ms:
+            return "freefall"
+        if features["mag_peak"] >= self.impact_peak_g:
+            return "impact"
+        if features["mag_rms"] >= self.vibration_rms_g:
+            return "vibration"
+        if features["tilt_deg"] >= self.tilt_abs_deg:
+            return "tilt"
+        return None
+
+    def detect(self, features, now):
+        hint = self._classify(features)
+        if hint is None:
+            return None
+        last = self._last_fire.get(hint)
+        if last is not None and (now - last) < self.cooldown_s:
+            return None
+        self._last_fire[hint] = now
+        return hint

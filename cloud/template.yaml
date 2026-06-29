@@ -63,6 +63,90 @@ Resources:
           Properties:
             Sql: "SELECT * FROM 'devices/+/events'"
 
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: raspi-accel-ai-users
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireUppercase: true
+          RequireSymbols: false
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - openid
+        - email
+        - profile
+      SupportedIdentityProviders:
+        - COGNITO
+      CallbackURLs:
+        - http://localhost:5173/
+      LogoutURLs:
+        - http://localhost:5173/
+
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Sub "raspi-accel-ai-${AWS::AccountId}"
+      UserPoolId: !Ref UserPool
+
+  DashboardApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          - "*"
+        AllowMethods:
+          - GET
+          - OPTIONS
+        AllowHeaders:
+          - authorization
+          - content-type
+      Auth:
+        Authorizers:
+          CognitoJwt:
+            IdentitySource: "$request.header.Authorization"
+            JwtConfiguration:
+              issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}"
+              audience:
+                - !Ref UserPoolClient
+        DefaultAuthorizer: CognitoJwt
+
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: api.handler.handler
+      Environment:
+        Variables:
+          EVENTS_TABLE: !Ref EventsTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref EventsTable
+      Events:
+        ListEvents:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref DashboardApi
+            Method: GET
+            Path: /events
+
 Outputs:
   EventsTableName:
     Value: !Ref EventsTable
@@ -70,3 +154,11 @@ Outputs:
     Value: !Ref AnalyzerFunction
   AnalyzerDLQUrl:
     Value: !Ref AnalyzerDLQ
+  DashboardApiUrl:
+    Value: !Sub "https://${DashboardApi}.execute-api.${AWS::Region}.amazonaws.com"
+  UserPoolId:
+    Value: !Ref UserPool
+  UserPoolClientId:
+    Value: !Ref UserPoolClient
+  HostedUiDomain:
+    Value: !Sub "raspi-accel-ai-${AWS::AccountId}.auth.${AWS::Region}.amazoncognito.com"

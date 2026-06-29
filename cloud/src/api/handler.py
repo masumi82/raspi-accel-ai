@@ -18,10 +18,7 @@ def _get_table():
 def _response(status, body):
     return {
         "statusCode": status,
-        "headers": {
-            "content-type": "application/json",
-            "access-control-allow-origin": "*",
-        },
+        "headers": {"content-type": "application/json"},
         "body": json.dumps(body, ensure_ascii=False),
     }
 
@@ -37,7 +34,10 @@ def handler(event, context):
     except (TypeError, ValueError):
         return _response(400, {"error": "limit must be an integer"})
     limit = max(1, min(limit, 200))
-    items = query_events(_get_table(), device_id, limit)
+    try:
+        items = query_events(_get_table(), device_id, limit)
+    except Exception:
+        return _response(500, {"error": "internal error"})
     return _response(
         200,
         {"deviceId": device_id, "count": len(items), "events": to_jsonable(items)},

@@ -2,7 +2,6 @@ import json
 from decimal import Decimal
 
 import boto3
-import pytest
 from moto import mock_aws
 
 import api.handler as handler_mod
@@ -51,7 +50,6 @@ def test_handler_lists_events_newest_first(monkeypatch):
     assert body["events"][0]["ts"] == "2026-06-29T12:05:00Z"  # newest first
     # Decimal converted to JSON number
     assert body["events"][0]["features"]["mag_peak"] == 3.21
-    assert resp["headers"]["access-control-allow-origin"] == "*"
 
 
 @mock_aws
@@ -72,3 +70,13 @@ def test_handler_bad_limit_returns_400():
 def test_handler_non_get_returns_405():
     resp = handler(_evt(method="POST"), None)
     assert resp["statusCode"] == 405
+
+
+def test_handler_returns_500_on_query_error(monkeypatch):
+    class Boom:
+        def query(self, **kwargs):
+            raise RuntimeError("ddb down")
+
+    monkeypatch.setattr(handler_mod, "_get_table", lambda: Boom())
+    resp = handler(_evt(qs={"deviceId": "raspi-01"}), None)
+    assert resp["statusCode"] == 500

@@ -97,8 +97,10 @@ Resources:
         - COGNITO
       CallbackURLs:
         - http://localhost:5173/
+        - !Sub "https://${FrontendDistribution.DomainName}/"
       LogoutURLs:
         - http://localhost:5173/
+        - !Sub "https://${FrontendDistribution.DomainName}/"
 
   UserPoolDomain:
     Type: AWS::Cognito::UserPoolDomain
@@ -106,12 +108,71 @@ Resources:
       Domain: !Sub "raspi-accel-ai-${AWS::AccountId}"
       UserPoolId: !Ref UserPool
 
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  FrontendOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "raspi-accel-ai-oac-${AWS::AccountId}"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  FrontendDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        Origins:
+          - Id: s3origin
+            DomainName: !GetAtt FrontendBucket.RegionalDomainName
+            OriginAccessControlId: !Ref FrontendOAC
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+        DefaultCacheBehavior:
+          TargetOriginId: s3origin
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub "${FrontendBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${FrontendDistribution}"
+
   DashboardApi:
     Type: AWS::Serverless::HttpApi
     Properties:
       CorsConfiguration:
         AllowOrigins:
-          - "*"
+          - http://localhost:5173
+          - !Sub "https://${FrontendDistribution.DomainName}"
         AllowMethods:
           - GET
           - OPTIONS
@@ -162,3 +223,7 @@ Outputs:
     Value: !Ref UserPoolClient
   HostedUiDomain:
     Value: !Sub "raspi-accel-ai-${AWS::AccountId}.auth.${AWS::Region}.amazoncognito.com"
+  FrontendBucketName:
+    Value: !Ref FrontendBucket
+  FrontendUrl:
+    Value: !Sub "https://${FrontendDistribution.DomainName}"

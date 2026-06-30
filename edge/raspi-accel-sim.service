@@ -1,0 +1,22 @@
+# systemd unit for the raspi-accel-ai simulator (no physical ADXL345 needed).
+# Install on the Raspberry Pi:
+#   sudo cp edge/raspi-accel-sim.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now raspi-accel-sim
+# Adjust --interval (seconds) to trade liveliness vs Bedrock cost.
+[Unit]
+Description=raspi-accel-ai simulator (sends synthetic accelerometer events to AWS IoT)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=masumi
+WorkingDirectory=/home/masumi/raspi-accel-ai
+Environment=IOT_ENDPOINT=a3ulfm4tqifpwj-ats.iot.ap-northeast-1.amazonaws.com
+Environment=DEVICE_ID=raspi-01
+ExecStart=/home/masumi/raspi-accel-ai/.venv/bin/python -m edge.sim_runner --count 0 --interval 900
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

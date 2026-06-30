@@ -90,10 +90,10 @@ python -m pytest edge/tests/ -q
 ```
 
 ### クラウドのデプロイ（概要）
-東京リージョンで Claude Sonnet のモデルアクセスを有効化のうえ:
+東京(ap-northeast-1)で Anthropic モデルのユースケース詳細フォームを提出のうえ:
 ```bash
 cd cloud
-sam build && sam deploy --guided   # 既定モデル: apac.anthropic.claude-sonnet-4-20250514-v1:0
+sam build && sam deploy --guided   # 既定モデル: jp.anthropic.claude-haiku-4-5-20251001-v1:0（低コスト。高精度はSonnet jp.へ）
 ```
 詳細は [cloud/README.md](cloud/README.md)。
 

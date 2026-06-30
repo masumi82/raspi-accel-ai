@@ -1,11 +1,11 @@
 # raspi-accel-ai cloud backend
 
-IoT Core → analyzer Lambda → Bedrock(Claude Sonnet) → DynamoDB のサーバーレスバックエンド。
+IoT Core → analyzer Lambda → Bedrock(Claude Haiku 4.5) → DynamoDB のサーバーレスバックエンド。
 
 ## 前提
 - AWS CLI / SAM CLI 設定済み
-- 対象リージョンで Bedrock の Claude Sonnet モデルアクセスを有効化済み
-- 既定値はAPAC(東京)向けGeo推論プロファイル `apac.anthropic.claude-sonnet-4-20250514-v1:0`。デプロイは ap-northeast-1（東京）など対応リージョンで行い、対象リージョンでこのモデルのアクセスを有効化しておくこと。
+- 初回のみ Anthropic モデルのユースケース詳細フォームを提出済み（Bedrockコンソールの Playground でClaudeを初回実行すると表示。有効化に約15分）
+- 既定値は東京向け推論プロファイル `jp.anthropic.claude-haiku-4-5-20251001-v1:0`（低コスト）。高精度にするなら `jp.anthropic.claude-sonnet-4-5-20250929-v1:0` を `--parameter-overrides BedrockModelId=...` で指定。デプロイは ap-northeast-1。
 - 他リージョンを使う場合は接頭辞を合わせる（us-east-1 → `us.`、欧州 → `eu.`、横断 → `global.`）。In-Region用の素のID（接頭辞なし）はオンデマンドConverse非対応のリージョンがあるため、Geoプロファイルを推奨。
 
 ## テスト

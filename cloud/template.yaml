@@ -5,8 +5,8 @@ Description: raspi-accel-ai cloud backend (IoT -> Bedrock -> DynamoDB)
 Parameters:
   BedrockModelId:
     Type: String
-    Default: jp.anthropic.claude-sonnet-4-5-20250929-v1:0
-    Description: Bedrock inference-profile id for Claude Sonnet (Japan-local jp. profile, verified available/enabled in ap-northeast-1; use the matching Geo prefix for other regions)
+    Default: jp.anthropic.claude-haiku-4-5-20251001-v1:0
+    Description: Bedrock inference-profile id for Claude Haiku 4.5 (Japan-local jp. profile, low-cost; verified in ap-northeast-1). Switch to a Sonnet jp. profile for higher accuracy.
 
 Globals:
   Function:
